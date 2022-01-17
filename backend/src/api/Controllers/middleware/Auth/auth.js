@@ -17,6 +17,7 @@ module.exports=async (req,res,next)=>{
             console.log(payload)
             User.findById(_id).then(userdata=>{
                 req.user=userdata
+
                 next();
             })
         }

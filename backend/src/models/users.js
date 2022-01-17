@@ -1,6 +1,5 @@
 const mongoose=require('mongoose');
-const joi=require('joi');
-const bcrypt=require('bcrypt');
+const {ObjectId}=mongoose.Schema.Types
 const userschema=mongoose.Schema({
     username:{
         type:String,
@@ -37,6 +36,25 @@ const userschema=mongoose.Schema({
         required: true,
         default: Date.now
     },
+    profile_pic_url:{
+        type:String,
+        required:false,
+        default:null,
+    },
+    followers:[{
+        type:ObjectId,
+        ref:"User",
+    }],
+    following:[{
+        type:ObjectId,
+        ref:"User"
+    }],
+    approve:[{
+        type:ObjectId,
+        ref:"User",
+    }],
+    blocked: { type: [ObjectId], default: [], ref: 'User' },
 
 });
+
 module.exports=mongoose.model("User",userschema);
