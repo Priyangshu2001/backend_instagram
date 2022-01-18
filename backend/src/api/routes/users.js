@@ -176,7 +176,6 @@ router.put('/:id',auth,async (req, res) => {
 })
 router.post('/photo-upload',auth, async (req, res) => {
     try {
-        if(req.params.id != req.user._id) {
             let authUser = await req.user;
             console.log(authUser);
             const fileStr = req.files.photos;
@@ -221,11 +220,7 @@ router.post('/photo-upload',auth, async (req, res) => {
                     "message": "Failure!!",
                 })
             })
-        }
-        else{
 
-            res.status(414).json({"Message":"Error occured"})
-        }
     } catch (e) {
         res.status(500).json({
             "message":"Failure!!",
@@ -354,7 +349,7 @@ router.get("/requests",async (req, res) => {
             let users = await User.findOne(
                 {_id: req.params.id,},
                 {approve: true, _id: false},
-            ).populate('following', '_id username email profile_pic_url')
+            ).populate('approve', '_id username email profile_pic_url')
                 .exec();
             res.status(200).json(users.approve)
         }
@@ -437,30 +432,29 @@ router.get("/:id/suggestion",auth,async (req, res) => {
 
     try {
         if(req.params.id != req.user._id){
-            req.user._id;
-            const user = await User.findById(req.user._id).populate({
-                path: "followers",
-                model: User,
-                select: "followers",
-            });
+            let users = await User.findOne(
+                {_id: req.params.id,},
+                {followers: true, _id: false},
+            ).populate('followers', '_id username email profile_pic_url followers')
+                .exec();
 
             let suggestedIds = new Set();
-            user.followers.map((friend) => {
+            await users.followers.map((friend) => {
                 friend.followers.map((f) => {
                     console.log(f.toString(), typeof f.toString());
-                    if (f.toString() !== req.user._id && !suggestedIds.has(f.toString()))
+                    if (f.toString() != req.user._id && !suggestedIds.has(f.toString()))
                         suggestedIds.add(f.toString());
                 });
             });
-            const usr = await User.findById(req.user._id).populate({
-                path: "following",
-                model: User,
-                select: "following",
-            });
+            let usr = await User.findOne(
+                {_id: req.params.id,},
+                {following: true, _id: false},
+            ).populate('following', '_id username email profile_pic_url following')
+                .exec();
             usr.following.map((friend) => {
                 friend.following.map((f) => {
                     console.log(f.toString(), typeof f.toString());
-                    if (f.toString() !== req.user._id && !suggestedIds.has(f.toString()))
+                    if (f.toString() != req.user._id && !suggestedIds.has(f.toString()))
                         suggestedIds.add(f.toString());
                 });
             });
